@@ -24,6 +24,11 @@ struct KeypointMatch
     float distance;
 };
 
+inline bool operator < (const KeypointMatch &a, const KeypointMatch &b)
+{
+    return a.distance < b.distance;
+}
+
 class FeatureExtractor
 {
 public:
@@ -36,5 +41,6 @@ public:
 class KeypointMatcher
 {
 public:
-    static void match(const vector<Keypoint> &keypointsA, const vector<Keypoint> &keypointsB);
+    vector<KeypointMatch> match(const vector<Keypoint> &keypointsA, const vector<Keypoint> &keypointsB);
+    int findBestIndex(const vector<Keypoint> &keypoints, const Keypoint &query);
 };

@@ -88,6 +88,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="adjustmentProblem.cpp" />
+    <ClCompile Include="bundlerManager.cpp" />
     <ClCompile Include="featureExtractor.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mLibSource.cpp" />
@@ -96,7 +97,7 @@
   <ItemGroup>
     <ClInclude Include="adjustmentProblem.h" />
     <ClInclude Include="appState.h" />
-    <ClInclude Include="denseCheck.h" />
+    <ClInclude Include="bundlerManager.h" />
     <ClInclude Include="featureExtractor.h" />
     <ClInclude Include="fragmentMatch.h" />
     <ClInclude Include="main.h" />

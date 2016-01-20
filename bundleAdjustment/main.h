@@ -10,11 +10,11 @@
 #include "util.h"
 
 #include "featureExtractor.h"
-#include "freakDescriptor.h"
 
-#include "denseCheck.h"
 #include "fragmentMatch.h"
 #include "adjustmentProblem.h"
+
+#include "bundlerManager.h"
 
 #include "appState.h"
 

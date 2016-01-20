@@ -50,3 +50,6 @@
 /bundleAdjustment/x64/Release/freakBundler/freakBundler.tlog/*
 /bundleAdjustment/x64/Release/freakBundler/*.obj
 /bundleAdjustment/x64/Release/freakBundler/*.pdb
+/bundleAdjustment/imageAOut.png
+/bundleAdjustment/imageBOut.png
+/data/sensors/sample.sensor

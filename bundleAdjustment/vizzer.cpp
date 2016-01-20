@@ -11,9 +11,52 @@ void Vizzer::init(ApplicationData &app)
 
     font.init(app.graphics, "Calibri");
 
-    FeatureExtractor extractor;
+    const string baseDir = R"(C:\Code\FREAK-bundler\data\)";
+
+    state.bundler.loadSensorFile(baseDir + "/sensors/sample.sensor");
+    state.bundler.computeKeypoints();
+    state.bundler.addCorrespondences(1);
+
+    int a = 5;
+
+    /*FeatureExtractor extractor;
     Bitmap bmpA = LodePNG::load("imageA.png");
-    auto keypts = extractor.detectAndDescribe(bmpA);
+    Bitmap bmpB = LodePNG::load("imageB.png");
+    auto keyptsA = extractor.detectAndDescribe(bmpA);
+    auto keyptsB = extractor.detectAndDescribe(bmpB);
+
+    KeypointMatcher matcher;
+    auto matches = matcher.match(keyptsA, keyptsB);
+
+    auto splat = [](Bitmap &bmp, int x, int y, vec4uc color)
+    {
+        int radius = 1;
+        for (int xOffset = -radius; xOffset <= radius; xOffset++)
+            for (int yOffset = -radius; yOffset <= radius; yOffset++)
+            {
+                if (bmp.isValidCoordinate(x + xOffset, y + yOffset))
+                    bmp(x + xOffset, y + yOffset) = color;
+            }
+    };
+
+    for (auto &match : matches)
+    {
+        if (match.distance >= 50)
+            continue;
+
+        const Keypoint &a = keyptsA[match.indexA];
+        const Keypoint &b = keyptsB[match.indexB];
+
+        vec4uc matchColor((BYTE)util::randomInteger(64, 255),
+                          (BYTE)util::randomInteger(64, 255),
+                          (BYTE)util::randomInteger(64, 255), 255);
+
+        splat(bmpA, math::round(a.pt.x), math::round(a.pt.y), matchColor);
+        splat(bmpB, math::round(b.pt.x), math::round(b.pt.y), matchColor);
+    }
+
+    LodePNG::save(bmpA, "imageAOut.png");
+    LodePNG::save(bmpB, "imageBOut.png");*/
 }
 
 void Vizzer::renderCamera(ApplicationData &app, const Cameraf &c, const vec3f &color)

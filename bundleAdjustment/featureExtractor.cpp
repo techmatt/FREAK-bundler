@@ -35,10 +35,9 @@ vector<Keypoint> FeatureExtractor::detectAndDescribe(const Bitmap &bmp)
     vector<cv::KeyPoint> cvPts;
     impl->surf->detect(cvImage, cvPts);
 
-    const int keyPtCount = (int)cvPts.size();
-
     Mat descriptors;
     impl->freak->compute(cvImage, cvPts, descriptors);
+    const int keyPtCount = (int)cvPts.size();
     
     vector<Keypoint> result(keyPtCount);
     for (int kIndex = 0; kIndex < keyPtCount; kIndex++)
@@ -55,9 +54,49 @@ vector<Keypoint> FeatureExtractor::detectAndDescribe(const Bitmap &bmp)
     return result;
 }
 
-void KeypointMatcher::match(const vector<Keypoint> &keypointsA, const vector<Keypoint> &keypointsB)
+vector<KeypointMatch> KeypointMatcher::match(const vector<Keypoint> &keypointsA, const vector<Keypoint> &keypointsB)
 {
+    const int aCount = (int)keypointsA.size();
+    const int bCount = (int)keypointsB.size();
 
+    vector<KeypointMatch> result;
+    for (int a = 0; a < aCount; a++)
+    {
+        int bestBMatch = findBestIndex(keypointsB, keypointsA[a]);
+        int checkAMatch = findBestIndex(keypointsA, keypointsB[bestBMatch]);
+        if (checkAMatch == a)
+        {
+            KeypointMatch match;
+            match.indexA = a;
+            match.indexB = bestBMatch;
+            match.distance = (float)FREAKDescriptor::hammingDistance(keypointsA[a].desc, keypointsB[bestBMatch].desc);
+            result.push_back(match);
+        }
+    }
+    
+    sort(result.begin(), result.end());
+    for (auto &r : result)
+    {
+        cout << r.distance << endl;
+    }
+
+    return result;
+}
+
+int KeypointMatcher::findBestIndex(const vector<Keypoint> &keypoints, const Keypoint &query)
+{
+    int bestIndex = -1;
+    int bestDist = numeric_limits<int>::max();
+    for (int i = 0; i < keypoints.size(); i++)
+    {
+        const int dist = FREAKDescriptor::hammingDistance(keypoints[i].desc, query.desc);
+        if (dist < bestDist)
+        {
+            bestDist = dist;
+            bestIndex = i;
+        }
+    }
+    return bestIndex;
 }
 
 int FREAKDescriptor::hammingDistance(const FREAKDescriptor &a, const FREAKDescriptor &b)
