@@ -10,6 +10,10 @@ void Vizzer::init(ApplicationData &app)
     camera = Cameraf(-eye, eye, worldUp, 60.0f, (float)app.window.getWidth() / app.window.getHeight(), 0.01f, 10000.0f);
 
     font.init(app.graphics, "Calibri");
+
+    FeatureExtractor extractor;
+    Bitmap bmpA = LodePNG::load("imageA.png");
+    auto keypts = extractor.detectAndDescribe(bmpA);
 }
 
 void Vizzer::renderCamera(ApplicationData &app, const Cameraf &c, const vec3f &color)
@@ -45,11 +49,6 @@ void Vizzer::render(ApplicationData &app)
     vector<string> text;
     text.push_back(string("FPS: ") + convert::toString(timer.framesPerSecond()));
     
-    /*
-    #include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/nonfree/features2d.hpp>
-#include <opencv2/legacy/legacy.hpp>*/
     const bool useText = true;
     if (useText)
         drawText(app, text);
