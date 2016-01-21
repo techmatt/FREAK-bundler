@@ -18,6 +18,7 @@
 #include <mLibD3D11.h>
 #include <mLibD3D11Font.h>
 #include <mLibDepthCamera.h>
+#include <mLibEigen.h>
 
 using namespace ml;
 using namespace std;

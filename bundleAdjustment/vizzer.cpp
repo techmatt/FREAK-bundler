@@ -17,6 +17,8 @@ void Vizzer::init(ApplicationData &app)
     state.bundler.computeKeypoints();
     state.bundler.addCorrespondences(1);
 
+    //state.bundler.saveImagePairCloud(0, 1, "out_0_1.ply");
+
     int a = 5;
 
     /*FeatureExtractor extractor;

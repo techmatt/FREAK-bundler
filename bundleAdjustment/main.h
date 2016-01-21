@@ -7,6 +7,8 @@
 
 #include "mLibInclude.h"
 
+#include "constants.h"
+
 #include "util.h"
 
 #include "featureExtractor.h"
@@ -14,6 +16,7 @@
 #include "fragmentMatch.h"
 #include "adjustmentProblem.h"
 
+#include "imagePairCorrespondences.h"
 #include "bundlerManager.h"
 
 #include "appState.h"

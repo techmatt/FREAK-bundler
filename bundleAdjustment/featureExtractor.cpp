@@ -75,10 +75,10 @@ vector<KeypointMatch> KeypointMatcher::match(const vector<Keypoint> &keypointsA,
     }
     
     sort(result.begin(), result.end());
-    for (auto &r : result)
+    /*for (auto &r : result)
     {
         cout << r.distance << endl;
-    }
+    }*/
 
     return result;
 }
