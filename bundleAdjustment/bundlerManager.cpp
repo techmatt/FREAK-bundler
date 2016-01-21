@@ -1,7 +1,7 @@
 
 #include "main.h"
 
-const int debugMaxFrameCount = 50;
+const int debugMaxFrameCount = 500;
 //const int debugMaxFrameCount = numeric_limits<int>::max();
 
 vec2i BundlerManager::imagePixelToDepthPixel(const vec2f &imageCoord) const
@@ -31,13 +31,12 @@ void BundlerManager::loadSensorFile(const string &filename)
 
     images.resize(imageCount);
 
-    depthIntrinsicInverse = data.m_CalibrationDepth.m_IntrinsicInverse;
-
     for (auto &image : iterate(images))
     {
         image.value.index = (int)image.index;
         image.value.colorImage.allocate(width, height);
         image.value.depthImage.allocate(width, height);
+        image.value.depthIntrinsicInverse = data.m_CalibrationDepth.m_IntrinsicInverse;
 
         memcpy(image.value.colorImage.getData(), data.m_ColorImages[image.index], sizeof(vec4uc) * width * height);
         memcpy(image.value.depthImage.getData(), data.m_DepthImages[image.index], sizeof(float) * width * height);
@@ -77,7 +76,7 @@ void BundlerManager::addCorrespondences(int imageAIndex, int imageBIndex)
 
     ImagePairCorrespondences correspondences;
     correspondences.imageA = &images[imageAIndex];
-    correspondences.imageB = &images[imageAIndex];
+    correspondences.imageB = &images[imageBIndex];
 
     for (auto &match : matches)
     {
@@ -91,8 +90,11 @@ void BundlerManager::addCorrespondences(int imageAIndex, int imageBIndex)
         const vec2i depthPixelA = imagePixelToDepthPixel(imageA.keypoints[match.indexA].pt);
         const vec2i depthPixelB = imagePixelToDepthPixel(imageB.keypoints[match.indexB].pt);
 
-        corr.ptALocal = imageA.localPos(depthPixelA, depthIntrinsicInverse);
-        corr.ptBLocal = imageB.localPos(depthPixelB, depthIntrinsicInverse);
+        corr.ptAPixel = math::round(imageA.keypoints[match.indexA].pt);
+        corr.ptALocal = imageA.localPos(depthPixelA);
+
+        corr.ptBPixel = math::round(imageB.keypoints[match.indexB].pt);
+        corr.ptBLocal = imageB.localPos(depthPixelB);
 
         corr.residual = -1.0f;
 

@@ -12,7 +12,6 @@ struct BundlerManager
 
     void visualize(const string &dir, int imageAIndex, int imageBIndex) const;
 
-    mat4f depthIntrinsicInverse;
     vector<BundlerImage> images;
     vector<ImagePairCorrespondences> allCorrespondences;
 };
