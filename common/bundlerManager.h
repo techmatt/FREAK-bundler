@@ -13,6 +13,10 @@ struct BundlerManager
     void visualize(const string &dir, int imageAIndex, int imageBIndex) const;
 
     void solve();
+    void updateResiduals();
+    void thresholdCorrespondences(double cutoff);
+
+    void saveResidualDistribution(const string &filename) const;
 
     void saveKeypointCloud(const string &outputFilename) const;
 

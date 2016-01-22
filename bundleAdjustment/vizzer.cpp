@@ -14,11 +14,18 @@ void Vizzer::init(ApplicationData &app)
     state.bundler.loadSensorFile(constants::dataDir + "/sensors/sample.sensor");
     state.bundler.computeKeypoints();
     state.bundler.addCorrespondences(1);
-    state.bundler.addCorrespondences(2);
-    state.bundler.addCorrespondences(3);
-    state.bundler.addCorrespondences(4);
+    //state.bundler.addCorrespondences(2);
+    //state.bundler.addCorrespondences(3);
+    //state.bundler.addCorrespondences(4);
+    
     state.bundler.solve();
+    
+    state.bundler.thresholdCorrespondences(0.01);
+
+    state.bundler.solve();
+
     state.bundler.saveKeypointCloud(constants::debugDir + "result.ply");
+    state.bundler.saveResidualDistribution(constants::debugDir + "residuals.csv");
 
     //state.bundler.saveImagePairCloud(0, 1, "out_0_1.ply");
 

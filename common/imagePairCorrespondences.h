@@ -78,6 +78,11 @@ struct ImageCorrespondence
     float residual;
 };
 
+inline bool operator < (const ImageCorrespondence &a, const ImageCorrespondence &b)
+{
+    return a.residual < b.residual;
+}
+
 struct ImagePairCorrespondences
 {
     struct TransformResult

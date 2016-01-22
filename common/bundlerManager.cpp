@@ -148,10 +148,12 @@ void BundlerManager::solve()
     options.minimizer_progress_to_stdout = true;
     options.max_num_iterations = 100000;
     options.max_num_consecutive_invalid_steps = 100;
-    options.function_tolerance = 1e-7;
+    options.function_tolerance = constants::CERESTolerance;
     ceres::Solver::Summary summary;
     ceres::Solve(options, &problem, &summary);
     std::cout << summary.FullReport() << std::endl;
+
+    updateResiduals();
 }
 
 void BundlerManager::saveKeypointCloud(const string &outputFilename) const
@@ -189,4 +191,65 @@ void BundlerManager::saveKeypointCloud(const string &outputFilename) const
     }
 
     PointCloudIOf::saveToFile(outputFilename, cloud);
+}
+
+void BundlerManager::updateResiduals()
+{
+    for (ImagePairCorrespondences &iCorr : allCorrespondences)
+    {
+        const BundlerFrame &frameA = *iCorr.imageA;
+        const BundlerFrame &frameB = *iCorr.imageB;
+
+        const mat4f frameAToWorld = frameA.frameToWorldMatrix();
+        const mat4f frameBToWorld = frameB.frameToWorldMatrix();
+
+        for (ImageCorrespondence &c : iCorr.inlierCorr)
+        {
+            const vec3f ptAWorld = frameAToWorld * c.ptALocal;
+            const vec3f ptBWorld = frameBToWorld * c.ptBLocal;
+            c.residual = vec3f::dist(ptAWorld, ptBWorld);
+        }
+
+        sort(iCorr.inlierCorr.begin(), iCorr.inlierCorr.end());
+    }
+}
+
+void BundlerManager::thresholdCorrespondences(double cutoff)
+{
+    for (ImagePairCorrespondences &iCorr : allCorrespondences)
+    {
+        vector<ImageCorrespondence> newCorr;
+        for (ImageCorrespondence &c : iCorr.inlierCorr)
+        {
+            if (c.residual < cutoff)
+                newCorr.push_back(c);
+        }
+        iCorr.inlierCorr = newCorr;
+    }
+}
+
+void BundlerManager::saveResidualDistribution(const string &filename) const
+{
+    ofstream file(filename);
+    file << "i0,i1,inliers";
+
+    const int quartiles = 10;
+    for (int i = 0; i < quartiles; i++)
+        file << ",q" << i;
+    file << endl;
+
+    for (const ImagePairCorrespondences &iCorr : allCorrespondences)
+    {
+        file << iCorr.imageA->index << ",";
+        file << iCorr.imageB->index << ",";
+        file << iCorr.inlierCorr.size();
+
+        for (int i = 0; i < quartiles; i++)
+        {
+            const double s = (double)i / (quartiles - 1.0);
+            int index = math::clamp(math::round(s * iCorr.inlierCorr.size()), 0, (int)iCorr.inlierCorr.size() - 1);
+            file << "," << iCorr.inlierCorr[index].residual;
+        }
+        file << endl;
+    }
 }
