@@ -1,7 +1,7 @@
 
 #include "main.h"
 
-vec3f BundlerImage::localPos(const vec2i &depthPixel) const
+vec3f BundlerFrame::localPos(const vec2i &depthPixel) const
 {
     if (!depthImage.isValidCoordinate(depthPixel))
         return vec3f(numeric_limits<float>::infinity(), numeric_limits<float>::infinity(), numeric_limits<float>::infinity());

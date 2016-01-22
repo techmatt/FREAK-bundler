@@ -1,63 +1,9 @@
 ﻿
 const bool useSquashFunction = false;
 
-struct Fragment
+struct CorrespondenceCostFunc
 {
-    Fragment()
-    {
-        index = -1;
-        for (auto &c : camera)
-            c = 0.0;
-        
-        debugColor = vec3f(util::randomUniformf(), util::randomUniformf(), util::randomUniformf());
-        while (debugColor.length() < 0.7f)
-            debugColor = vec3f(util::randomUniformf(), util::randomUniformf(), util::randomUniformf());
-
-        connectedToFragmentZero = false;
-    }
-    mat4f fragmentToWorldMatrix() const
-    {
-        mat4f rotation = mat4f::identity();
-        mat4f translation = mat4f::translation(vec3f((float)camera[3], (float)camera[4], (float)camera[5]));
-
-        const vec3f axis = vec3f((float)camera[0], (float)camera[1], (float)camera[2]);
-        const float angle = axis.length();
-        if (angle >= 1e-10f)
-        {
-            rotation = mat4f::rotation(axis.getNormalized(), math::radiansToDegrees(angle));
-        }
-        return translation * rotation;
-    }
-    mat4f worldToFragmentMatrix() const
-    {
-        return fragmentToWorldMatrix().getInverse();
-    }
-    bool isValidCamera() const
-    {
-        return index == 0 || !(camera[0] == 0.0 && camera[5] == 0.0);
-    }
-
-    int index;
-
-    //camera[0,1,2] are the angle-axis rotation
-    //camera[3,4,5] are the translation
-    double camera[6];
-
-    vector<vec3f> keypoints;
-    set<int> fragmentNeighbors;
-    map<int, mat4f> fragmentNeighborTransform;
-
-    string pointCloudPath;
-
-    Cameraf debugCamera;
-    vec3f debugColor;
-
-    bool connectedToFragmentZero;
-};
-
-struct CorrespondenceError
-{
-    CorrespondenceError(const Correspondence &_corr)
+    CorrespondenceCostFunc(const ImageCorrespondence &_corr)
         : corr(_corr) {}
 
     template <typename T> T squash(const T &x) const
@@ -73,12 +19,12 @@ struct CorrespondenceError
         // camera[0,1,2] are the angle-axis rotation
         // camera[3,4,5] are the translation
         
-        T pA[3] = { T(corr.e[0].fragmentPos.x), T(corr.e[0].fragmentPos.y), T(corr.e[0].fragmentPos.z) };
+        T pA[3] = { T(corr.ptALocal.x), T(corr.ptALocal.y), T(corr.ptALocal.z) };
         T pAWorld[3];
         ceres::AngleAxisRotatePoint(cameraA, pA, pAWorld);
         pAWorld[0] += cameraA[3]; pAWorld[1] += cameraA[4]; pAWorld[2] += cameraA[5];
 
-        T pB[3] = { T(corr.e[1].fragmentPos.x), T(corr.e[1].fragmentPos.y), T(corr.e[1].fragmentPos.z) };
+        T pB[3] = { T(corr.ptBLocal.x), T(corr.ptBLocal.y), T(corr.ptBLocal.z) };
         T pBWorld[3];
         ceres::AngleAxisRotatePoint(cameraB, pB, pBWorld);
         pBWorld[0] += cameraB[3]; pBWorld[1] += cameraB[4]; pBWorld[2] += cameraB[5];
@@ -99,20 +45,27 @@ struct CorrespondenceError
         return true;
     }
 
-    // Factory to hide the construction of the CostFunction object from
-    // the client code.
-    static ceres::CostFunction* Create(const Correspondence &corr)
+    static ceres::CostFunction* Create(const ImageCorrespondence &corr)
     {
-        return (new ceres::AutoDiffCostFunction<CorrespondenceError, 3, 6, 6>(
-            new CorrespondenceError(corr)));
+        auto cFunc = new CorrespondenceCostFunc(corr);
+
+        double cameraA[6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+        double cameraB[6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+        double residuals[3] = { 0.0, 0.0, 0.0 };
+        (*cFunc)(cameraA, cameraB, residuals);
+
+        if (residuals[0] != residuals[0])
+            cout << "invalid residual: " << residuals[0] << endl;
+
+        return (new ceres::AutoDiffCostFunction<CorrespondenceCostFunc, 3, 6, 6>(cFunc));
     }
 
-    Correspondence corr;
+    ImageCorrespondence corr;
 };
 
-struct AnchorError
+struct AnchorCostFunc
 {
-    AnchorError(const vec3f &_anchorPoint, float _weight)
+    AnchorCostFunc(const vec3f &_anchorPoint, float _weight)
         : anchorPoint(_anchorPoint), weight(_weight) {}
 
     template <typename T>
@@ -133,34 +86,20 @@ struct AnchorError
         return true;
     }
 
-    // Factory to hide the construction of the CostFunction object from
-    // the client code.
     static ceres::CostFunction* Create(const vec3f &anchorPoint, float weight)
     {
-        return (new ceres::AutoDiffCostFunction<AnchorError, 3, 6>(
-            new AnchorError(anchorPoint, weight)));
+        auto cFunc = new AnchorCostFunc(anchorPoint, weight);
+
+        double camera[6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+        double residuals[3] = { 0.0, 0.0, 0.0 };
+        (*cFunc)(camera, residuals);
+
+        if (residuals[0] != residuals[0])
+            cout << "invalid residual: " << residuals[0] << endl;
+
+        return (new ceres::AutoDiffCostFunction<AnchorCostFunc, 3, 6>(cFunc));
     }
 
     vec3f anchorPoint;
     float weight;
-};
-
-struct AdjustmentProblem
-{
-    vector<Fragment> fragments;
-    vector<Correspondence> correspondences;
-    float anchorWeight;
-    Grid2<FragmentMatch> matches;
-
-    void initFromMatches(const string &pointCloudDirPrefix, const string &matchDir, int fragmentCount, const set<int> &excludedMatches);
-
-    void initDebug();
-
-    void solve();
-
-    Grid2f runDenseCheck(const string &cacheFolder, set<int> &excludedMatchesOut, float overlapCutoff);
-    void greedyInitialize(const Grid2f &scores);
-    int evaluateResiduals(double residualThreshold, int maxToEliminate, const string &residualFilename, set<int> &excludedMatchesOut);
-
-    void saveGlobalCloud(const string &outputFilename, float subsampleRatio) const;
 };

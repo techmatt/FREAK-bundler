@@ -1,8 +1,8 @@
 
 #include "main.h"
 
-const int debugMaxFrameCount = 500;
-//const int debugMaxFrameCount = numeric_limits<int>::max();
+//const int debugMaxFrameCount = 200;
+const int debugMaxFrameCount = numeric_limits<int>::max();
 
 vec2i BundlerManager::imagePixelToDepthPixel(const vec2f &imageCoord) const
 {
@@ -12,6 +12,7 @@ vec2i BundlerManager::imagePixelToDepthPixel(const vec2f &imageCoord) const
 
 void BundlerManager::loadSensorFile(const string &filename)
 {
+    cout << "Reading sensor file" << endl;
     BinaryDataStreamFile in(filename, false);
     CalibratedSensorData data;
     in >> data;
@@ -27,28 +28,30 @@ void BundlerManager::loadSensorFile(const string &filename)
 
     const int width = data.m_ColorImageWidth;
     const int height = data.m_ColorImageHeight;
-    const int imageCount = min((int)data.m_ColorImages.size(), debugMaxFrameCount);
+    const int frameCount = min((int)data.m_ColorImages.size(), debugMaxFrameCount);
 
-    images.resize(imageCount);
+    cout << "Creating frames" << endl;
+    frames.resize(frameCount);
 
-    for (auto &image : iterate(images))
+    for (auto &frame : iterate(frames))
     {
-        image.value.index = (int)image.index;
-        image.value.colorImage.allocate(width, height);
-        image.value.depthImage.allocate(width, height);
-        image.value.depthIntrinsicInverse = data.m_CalibrationDepth.m_IntrinsicInverse;
+        frame.value.index = (int)frame.index;
+        frame.value.colorImage.allocate(width, height);
+        frame.value.depthImage.allocate(width, height);
+        frame.value.depthIntrinsicInverse = data.m_CalibrationDepth.m_IntrinsicInverse;
 
-        memcpy(image.value.colorImage.getData(), data.m_ColorImages[image.index], sizeof(vec4uc) * width * height);
-        memcpy(image.value.depthImage.getData(), data.m_DepthImages[image.index], sizeof(float) * width * height);
+        memcpy(frame.value.colorImage.getData(), data.m_ColorImages[frame.index], sizeof(vec4uc) * width * height);
+        memcpy(frame.value.depthImage.getData(), data.m_DepthImages[frame.index], sizeof(float) * width * height);
 
-        SAFE_DELETE_ARRAY(data.m_ColorImages[image.index]);
-        SAFE_DELETE_ARRAY(data.m_DepthImages[image.index]);
+        SAFE_DELETE_ARRAY(data.m_ColorImages[frame.index]);
+        SAFE_DELETE_ARRAY(data.m_DepthImages[frame.index]);
     }
 }
 
 void BundlerManager::addCorrespondences(int forwardSkip)
 {
-    for (auto &startImage : images)
+    cout << "Adding correspondesnces (skip=" << forwardSkip << ")" << endl;
+    for (auto &startImage : frames)
     {
         addCorrespondences(startImage.index, startImage.index + forwardSkip);
     }
@@ -56,34 +59,35 @@ void BundlerManager::addCorrespondences(int forwardSkip)
 
 void BundlerManager::computeKeypoints()
 {
+    cout << "Computing image keypoints" << endl;
     FeatureExtractor extractor;
-    for (auto &i : images)
+    for (auto &i : frames)
     {
         i.keypoints = extractor.detectAndDescribe(i.colorImage);
     }
 }
 
-void BundlerManager::addCorrespondences(int imageAIndex, int imageBIndex)
+void BundlerManager::addCorrespondences(int frameAIndex, int frameBIndex)
 {
-    if (imageBIndex >= images.size())
+    if (frameBIndex >= frames.size())
         return;
 
-    const BundlerImage &imageA = images[imageAIndex];
-    const BundlerImage &imageB = images[imageBIndex];
+    const BundlerFrame &imageA = frames[frameAIndex];
+    const BundlerFrame &imageB = frames[frameBIndex];
 
     KeypointMatcher matcher;
     auto matches = matcher.match(imageA.keypoints, imageB.keypoints);
 
     ImagePairCorrespondences correspondences;
-    correspondences.imageA = &images[imageAIndex];
-    correspondences.imageB = &images[imageBIndex];
+    correspondences.imageA = &frames[frameAIndex];
+    correspondences.imageB = &frames[frameBIndex];
 
     for (auto &match : matches)
     {
         ImageCorrespondence corr;
         
-        corr.imageA = imageAIndex;
-        corr.imageB = imageBIndex;
+        corr.imageA = frameAIndex;
+        corr.imageB = frameBIndex;
 
         corr.keyPtDist = match.distance;
 
@@ -108,127 +112,82 @@ void BundlerManager::addCorrespondences(int imageAIndex, int imageBIndex)
     if (correspondences.transformInliers >= constants::minInlierCount)
         allCorrespondences.push_back(correspondences);
 }
-/*
-void BundlerManager::saveImagePairCloud(int imageAIndex, int imageBIndex, const string &plyFilenameOut)
+
+void BundlerManager::solve()
 {
-    ImagePairCorrespondences *correspondences = nullptr;
-    for (auto &i : allCorrespondences)
+    ceres::Problem problem;
+    int totalCorrespondences = 0;
+    for (const ImagePairCorrespondences &iCorr : allCorrespondences)
     {
-        if (i.imageA == imageAIndex &&
-            i.imageB == imageBIndex)
+        BundlerFrame &frameA = *iCorr.imageA;
+        BundlerFrame &frameB = *iCorr.imageB;
+
+        for (const ImageCorrespondence &c : iCorr.inlierCorr)
         {
-            correspondences = &i;
+            ceres::CostFunction* costFunction = CorrespondenceCostFunc::Create(c);
+            problem.AddResidualBlock(costFunction, NULL, frameA.camera, frameB.camera);
+            totalCorrespondences++;
         }
     }
-    if (correspondences == nullptr)
+
+    for (const Keypoint &keypt : frames[0].keypoints)
     {
-        cout << "Image pair not found" << endl;
-        return;
-    }
-
-    PointCloudf cloud;
-
-    vector<TriMeshf> meshes;
-
-    const BundlerImage &imageA = images[imageAIndex];
-    const BundlerImage &imageB = images[imageBIndex];
-
-    const vec3f AOffset = vec3f::eX * 0.1f;
-    const vec3f BOffset = vec3f::eX * -0.1f;
-
-    const vec4f AColor(1.0f, 0.5f, 0.5f, 1.0f);
-    const vec4f BColor(0.5f, 0.5f, 1.0f, 1.0f);
-
-    auto makeColoredBox = [](const vec3f &center, const vec4f &color, float radius) {
-        TriMeshf result = ml::Shapesf::box(radius, radius, radius);
-        result.transform(mat4f::translation(center));
-        result.setColor(color);
-        return result;
-    };
-
-    auto addMatch = [&](const ImageCorrespondence &m, const vec4f &matchColor, float scale)
-    {
-        cloud.m_points.push_back(m.ptALocal + AOffset);
-        cloud.m_colors.push_back(matchColor);
-
-        cloud.m_points.push_back(m.ptBLocal + BOffset);
-        cloud.m_colors.push_back(matchColor);
-
-        meshes.push_back(makeColoredBox(m.ptALocal + AOffset, matchColor, 0.015f * scale));
-        meshes.push_back(makeColoredBox(m.ptBLocal + BOffset, matchColor, 0.015f * scale));
-
-        const TriMeshf cylinder = Shapesf::cylinder(m.ptALocal + AOffset, m.ptBLocal + BOffset, 0.007f * scale, 2, 4, matchColor);
-        meshes.push_back(cylinder);
-    };
-
-    for (auto &m : correspondences->inlierCorr)
-    {
-        vec4f matchColor(util::randomUniform(0.3f, 1.0f),
-            util::randomUniform(0.3f, 1.0f),
-            util::randomUniform(0.3f, 1.0f), 1.0f);
-        addMatch(m, matchColor, 1.0f);
-    }
-
-    for (auto &m : correspondences->allCorr)
-    {
-        vec4f matchColor(0.5f, 0.5f, 0.5f, 1.0f);
-        addMatch(m, matchColor, 0.6f);
-    }
-
-    const int stride = 2;
-    for (auto &p : imageA.depthImage)
-    {
-        const vec3f pos = imageA.localPos(vec2i((int)p.x, (int)p.y), depthIntrinsicInverse);
-        if (!pos.isValid())
+        const vec3f framePos = frames[0].localPos(keypt.pt);
+        if (!framePos.isValid())
             continue;
 
-        if (p.x % stride != 0 || p.y % stride != 0)
-            continue;
-
-        meshes.push_back(makeColoredBox(pos + AOffset, AColor, 0.002f));
-        //cloud.m_points.push_back(pos + AOffset);
-        //cloud.m_colors.push_back(AColor);
+        ceres::CostFunction* costFunction = AnchorCostFunc::Create(framePos, 100.0f);
+        problem.AddResidualBlock(costFunction, NULL, frames[0].camera);
     }
 
-    for (auto &p : imageB.depthImage)
-    {
-        const vec3f pos = imageB.localPos(vec2i((int)p.x, (int)p.y), depthIntrinsicInverse);
-        if (!pos.isValid())
-            continue;
-
-        if (p.x % stride != 0 || p.y % stride != 0)
-            continue;
-
-        meshes.push_back(makeColoredBox(pos + BOffset, BColor, 0.002f));
-        //cloud.m_points.push_back(pos + BOffset);
-        //cloud.m_colors.push_back(BColor);
-    }
-
-    std::vector<vec3f> unifiedVertices;
-    std::vector<unsigned int> unifiedIndices;
-    std::vector<vec4f> unifiedColors;
-    std::vector<vec2f> unifiedTexCoords;
-    std::vector<vec3f> unifiedNormals;
-
-    int meshBaseVertex = 0;
-    for (const auto &mesh : meshes)
-    {
-        for (auto &v : mesh.getVertices())
-        {
-            unifiedVertices.push_back(v.position);
-            unifiedColors.push_back(v.color);
-        }
-        for (auto &i : mesh.getIndices())
-        {
-            unifiedIndices.push_back(i.x + meshBaseVertex);
-            unifiedIndices.push_back(i.y + meshBaseVertex);
-            unifiedIndices.push_back(i.z + meshBaseVertex);
-        }
-        meshBaseVertex += (int)mesh.getVertices().size();
-    }
-
-    TriMeshf unifiedMesh(unifiedVertices, unifiedIndices, unifiedColors, unifiedNormals, unifiedTexCoords);
-
-    MeshIOf::saveToPLY(plyFilenameOut, unifiedMesh.getMeshData());
+    cout << "Total correspondences: " << totalCorrespondences << endl;
+    
+    ceres::Solver::Options options;
+    //options.linear_solver_type = ceres::SPARSE_NORMAL_CHOLESKY;
+    options.linear_solver_type = ceres::
+        ;
+    options.minimizer_progress_to_stdout = true;
+    options.max_num_iterations = 100000;
+    options.max_num_consecutive_invalid_steps = 100;
+    options.function_tolerance = 1e-7;
+    ceres::Solver::Summary summary;
+    ceres::Solve(options, &problem, &summary);
+    std::cout << summary.FullReport() << std::endl;
 }
-*/
+
+void BundlerManager::saveKeypointCloud(const string &outputFilename) const
+{
+    PointCloudf cloud;
+    
+    for (const BundlerFrame &frame : frames)
+    {
+        const mat4f m = frame.frameToWorldMatrix();
+        
+        /*for (const Keypoint &keypt : frame.keypoints)
+        {
+            const vec3f framePos = frame.localPos(keypt.pt);
+            if (!framePos.isValid())
+                continue;
+
+            cloud.m_points.push_back(m * framePos);
+            cloud.m_colors.push_back(vec4f(keypt.color) / 255.0f);
+        }*/
+
+        const int stride = 5;
+        for (auto &p : frame.depthImage)
+        {
+            vec2i coord((int)p.x, (int)p.y);
+            const vec3f framePos = frame.localPos(coord);
+            if (!framePos.isValid())
+                continue;
+
+            if (p.x % stride != 0 || p.y % stride != 0)
+                continue;
+
+            cloud.m_points.push_back(m * framePos);
+            cloud.m_colors.push_back(vec4f(frame.colorImage(coord)) / 255.0f);
+        }
+    }
+
+    PointCloudIOf::saveToFile(outputFilename, cloud);
+}

@@ -10,6 +10,7 @@ struct FREAKDescriptor
 struct Keypoint
 {
     vec2f pt;
+    vec4uc color;
     float size;
     float angle;
     float response;

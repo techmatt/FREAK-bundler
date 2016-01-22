@@ -10,8 +10,7 @@ struct FeatureExtractorImpl
 {
     FeatureExtractorImpl()
     {
-        const double hessian = 100.0;
-        surf = SURF::create(hessian);
+        surf = SURF::create(constants::SIFTHessian);
         freak = FREAK::create();
     }
     Ptr<Feature2D> surf;
@@ -49,6 +48,7 @@ vector<Keypoint> FeatureExtractor::detectAndDescribe(const Bitmap &bmp)
         keypt.size = k.size;
         keypt.pt.x = k.pt.x;
         keypt.pt.y = k.pt.y;
+        keypt.color = bmp(math::round(keypt.pt));
         memcpy(keypt.desc.data, descriptors.ptr(kIndex), 64);
     }
     return result;

@@ -11,11 +11,14 @@ void Vizzer::init(ApplicationData &app)
 
     font.init(app.graphics, "Calibri");
 
-    const string baseDir = R"(C:\Code\FREAK-bundler\data\)";
-
-    state.bundler.loadSensorFile(baseDir + "/sensors/sample.sensor");
+    state.bundler.loadSensorFile(constants::dataDir + "/sensors/sample.sensor");
     state.bundler.computeKeypoints();
     state.bundler.addCorrespondences(1);
+    state.bundler.addCorrespondences(2);
+    state.bundler.addCorrespondences(3);
+    state.bundler.addCorrespondences(4);
+    state.bundler.solve();
+    state.bundler.saveKeypointCloud(constants::debugDir + "result.ply");
 
     //state.bundler.saveImagePairCloud(0, 1, "out_0_1.ply");
 
@@ -80,10 +83,10 @@ void Vizzer::render(ApplicationData &app)
 {
     timer.frame();
 
-    for (const Fragment &f : state.data.fragments)
+    /*for (const Fragment &f : state.data.fragments)
     {
         renderCamera(app, f.debugCamera, f.debugColor);
-    }
+    }*/
 
     const float borderRadius = 0.01f;
     assets.renderCylinder(camera.getCameraPerspective(), vec3f(1.0f, 0.0f, 0.0f), vec3f(1.0f, 1.0f, 0.0f), borderRadius, vec3f(1.0f, 0.0f, 0.0f));

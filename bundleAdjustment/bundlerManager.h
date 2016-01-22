@@ -12,6 +12,10 @@ struct BundlerManager
 
     void visualize(const string &dir, int imageAIndex, int imageBIndex) const;
 
-    vector<BundlerImage> images;
+    void solve();
+
+    void saveKeypointCloud(const string &outputFilename) const;
+
+    vector<BundlerFrame> frames;
     vector<ImagePairCorrespondences> allCorrespondences;
 };

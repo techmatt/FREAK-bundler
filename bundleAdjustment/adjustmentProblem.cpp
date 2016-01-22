@@ -1,19 +1,7 @@
 ﻿
 #include "main.h"
 
-const float minOverlapScore = 0.3f;
-const float correspondenceStrengthCutoff = 0.95f;
-const float strengthRatioThreshold = 0.2f;
-
-const float matchDist = 0.05f;
-const float colorMatchDist = 0.3f;
-
-int getMatchHash(int a, int b)
-{
-    if (a > b) swap(a, b);
-    return a * 1024 + b;
-}
-
+/*
 void AdjustmentProblem::initFromMatches(const string &pointCloudDirPrefix, const string &matchDir, int fragmentCount, const set<int> &excludedMatches)
 {
     fragments.clear();
@@ -190,3 +178,4 @@ void AdjustmentProblem::saveGlobalCloud(const string &outputFilename, float subs
     }
     PointCloudIOf::saveToFile(outputFilename, cloud);
 }
+*/

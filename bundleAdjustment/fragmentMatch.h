@@ -1,5 +1,5 @@
 ﻿
-struct Correspondence
+/*struct Correspondence
 {
     struct Entry
     {
@@ -11,9 +11,9 @@ struct Correspondence
     float alignmentError;
     float scoreAtoB;
     float scoreBtoA;
-};
+};*/
 
-struct FragmentMatch
+/*struct FragmentMatch
 {
     void loadASCII(const string &filename, int _fragmentAIndex, int _fragmentBIndex)
     {
@@ -33,7 +33,7 @@ struct FragmentMatch
         0 0 0 1
         #matches*/
 
-        const int matchCount = convert::toInt(util::split(lines[0], ' ')[1]);
+        /*const int matchCount = convert::toInt(util::split(lines[0], ' ')[1]);
         const int keypointACount = convert::toInt(util::split(lines[1], ' ')[1]);
         const int keypointBCount = convert::toInt(util::split(lines[2], ' ')[1]);
 
@@ -116,4 +116,4 @@ struct FragmentMatch
     vector<Correspondence> correspondences;
     vector<vec3f> keypointsA;
     vector<vec3f> keypointsB;
-};
+};*/

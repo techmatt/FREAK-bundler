@@ -13,11 +13,10 @@
 
 #include "featureExtractor.h"
 
-#include "fragmentMatch.h"
-#include "adjustmentProblem.h"
-
 #include "imagePairCorrespondences.h"
 #include "bundlerManager.h"
+
+#include "adjustmentProblem.h"
 
 #include "appState.h"
 

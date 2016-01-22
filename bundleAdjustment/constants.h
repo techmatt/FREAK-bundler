@@ -1,6 +1,8 @@
 
 namespace constants
 {
+    const double SIFTHessian = 500.0;
+
     const int minCorrespondenceCount = 20;
     const int minInlierCount = 10;
 
