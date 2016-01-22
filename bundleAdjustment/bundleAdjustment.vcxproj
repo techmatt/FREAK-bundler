@@ -47,7 +47,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IntDir>$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <LibraryPath>$(ProjectDir)\..\..\mLibExternal\libsWindows\lib64;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x64;D:\Code\opencv3_1\build\x64\vc12\lib;D:\Code\opencv3_1\output\lib\Release;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;D:\Code\opencv3_1\build\include;D:\Code\opencv3_1\opencv_contrib\modules\xfeatures2d\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;D:\Code\opencv3_1\build\include;D:\Code\opencv3_1\opencv_contrib\modules\xfeatures2d\include;./;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -87,25 +87,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="adjustmentProblem.cpp" />
-    <ClCompile Include="bundlerManager.cpp" />
-    <ClCompile Include="featureExtractor.cpp" />
-    <ClCompile Include="imagePairCorrespondences.cpp" />
+    <ClCompile Include="..\common\bundlerManager.cpp" />
+    <ClCompile Include="..\common\featureExtractor.cpp" />
+    <ClCompile Include="..\common\imagePairCorrespondences.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mLibSource.cpp" />
     <ClCompile Include="vizzer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="adjustmentProblem.h" />
+    <ClInclude Include="..\common\bundlerManager.h" />
+    <ClInclude Include="..\common\constants.h" />
+    <ClInclude Include="..\common\costFunctions.h" />
+    <ClInclude Include="..\common\featureExtractor.h" />
+    <ClInclude Include="..\common\helper.h" />
+    <ClInclude Include="..\common\imagePairCorrespondences.h" />
     <ClInclude Include="appState.h" />
-    <ClInclude Include="bundlerManager.h" />
-    <ClInclude Include="constants.h" />
-    <ClInclude Include="featureExtractor.h" />
-    <ClInclude Include="fragmentMatch.h" />
-    <ClInclude Include="imagePairCorrespondences.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="mLibInclude.h" />
-    <ClInclude Include="util.h" />
     <ClInclude Include="vizzer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

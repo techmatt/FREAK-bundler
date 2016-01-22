@@ -7,16 +7,12 @@
 
 #include "mLibInclude.h"
 
-#include "constants.h"
-
-#include "util.h"
-
-#include "featureExtractor.h"
-
-#include "imagePairCorrespondences.h"
-#include "bundlerManager.h"
-
-#include "adjustmentProblem.h"
+#include "../common/constants.h"
+#include "../common/helper.h"
+#include "../common/featureExtractor.h"
+#include "../common/imagePairCorrespondences.h"
+#include "../common/bundlerManager.h"
+#include "../common/costFunctions.h"
 
 #include "appState.h"
 
