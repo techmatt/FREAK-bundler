@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="mLibSource.cpp" />
+    <ClCompile Include="..\common\bundlerManager.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\featureExtractor.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\imagePairCorrespondences.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="main.h" />
+    <ClInclude Include="mLibInclude.h" />
+    <ClInclude Include="..\common\bundlerManager.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\constants.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\featureExtractor.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\helper.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\imagePairCorrespondences.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\costFunctions.h">
+      <Filter>common</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="common">
+      <UniqueIdentifier>{5b098616-e6e3-44ee-b9a1-3a14f3d80dcf}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
