@@ -20,4 +20,8 @@ namespace constants
 
     const string dataDir = R"(C:\Code\FREAK-bundler\data\)";
     const string debugDir = dataDir + "debug/";
+
+    const int debugMaxFrameCount = 20;
+    //const int debugMaxFrameCount = numeric_limits<int>::max();
+
 }

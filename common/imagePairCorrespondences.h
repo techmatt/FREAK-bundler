@@ -13,7 +13,7 @@ struct BundlerFrame
             debugColor = vec3f(util::randomUniformf(), util::randomUniformf(), util::randomUniformf());
     }
 
-    mat4f frameToWorldMatrix() const
+    mat4f makeFrameToWorld() const
     {
         mat4f rotation = mat4f::identity();
         mat4f translation = mat4f::translation(vec3f((float)camera[3], (float)camera[4], (float)camera[5]));
@@ -27,14 +27,12 @@ struct BundlerFrame
         return translation * rotation;
     }
 
-    mat4f worldToFrameMatrix() const
+    void updateTransforms()
     {
-        return frameToWorldMatrix().getInverse();
-    }
+        frameToWorld = makeFrameToWorld();
+        worldToFrame = frameToWorld.getInverse();
 
-    bool isValidCamera() const
-    {
-        return index == 0 || !(camera[0] == 0.0 && camera[5] == 0.0);
+        debugCamera = Cameraf(frameToWorld, 60.0f, 1.0f, 0.01f, 100.0f);
     }
 
     vec3f localPos(const vec2i &depthPixel) const;
@@ -52,6 +50,8 @@ struct BundlerFrame
     //camera[3,4,5] are the translation
     double camera[6];
 
+    mat4f frameToWorld;
+    mat4f worldToFrame;
     Cameraf debugCamera;
     vec3f debugColor;
 };

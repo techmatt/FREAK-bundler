@@ -1,8 +1,6 @@
 
 #include "main.h"
 
-//const int debugMaxFrameCount = 200;
-const int debugMaxFrameCount = numeric_limits<int>::max();
 
 vec2i BundlerManager::imagePixelToDepthPixel(const vec2f &imageCoord) const
 {
@@ -28,7 +26,7 @@ void BundlerManager::loadSensorFile(const string &filename)
 
     const int width = data.m_ColorImageWidth;
     const int height = data.m_ColorImageHeight;
-    const int frameCount = min((int)data.m_ColorImages.size(), debugMaxFrameCount);
+    const int frameCount = min((int)data.m_ColorImages.size(), constants::debugMaxFrameCount);
 
     cout << "Creating frames" << endl;
     frames.resize(frameCount);
@@ -155,6 +153,11 @@ void BundlerManager::solve()
     ceres::Solve(options, &problem, &summary);
     std::cout << summary.FullReport() << std::endl;
 
+    for (BundlerFrame &f : frames)
+    {
+        f.updateTransforms();
+    }
+
     updateResiduals();
 }
 
@@ -164,8 +167,6 @@ void BundlerManager::saveKeypointCloud(const string &outputFilename) const
     
     for (const BundlerFrame &frame : frames)
     {
-        const mat4f m = frame.frameToWorldMatrix();
-        
         const int stride = 5;
         for (auto &p : frame.depthImage)
         {
@@ -177,7 +178,7 @@ void BundlerManager::saveKeypointCloud(const string &outputFilename) const
             if (p.x % stride != 0 || p.y % stride != 0)
                 continue;
 
-            cloud.m_points.push_back(m * framePos);
+            cloud.m_points.push_back(frame.frameToWorld * framePos);
             cloud.m_colors.push_back(vec4f(frame.colorImage(coord)) / 255.0f);
         }
     }
@@ -192,13 +193,10 @@ void BundlerManager::updateResiduals()
         const BundlerFrame &frameA = *iCorr.imageA;
         const BundlerFrame &frameB = *iCorr.imageB;
 
-        const mat4f frameAToWorld = frameA.frameToWorldMatrix();
-        const mat4f frameBToWorld = frameB.frameToWorldMatrix();
-
         for (ImageCorrespondence &c : iCorr.inlierCorr)
         {
-            const vec3f ptAWorld = frameAToWorld * c.ptALocal;
-            const vec3f ptBWorld = frameBToWorld * c.ptBLocal;
+            const vec3f ptAWorld = frameA.frameToWorld * c.ptALocal;
+            const vec3f ptBWorld = frameB.frameToWorld * c.ptBLocal;
             c.residual = vec3f::dist(ptAWorld, ptBWorld);
         }
 

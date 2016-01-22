@@ -51,10 +51,10 @@ void Vizzer::render(ApplicationData &app)
 {
     timer.frame();
 
-    /*for (const Fragment &f : state.data.fragments)
+    for (const BundlerFrame &f : state.bundler.frames)
     {
         renderCamera(app, f.debugCamera, f.debugColor);
-    }*/
+    }
 
     const float borderRadius = 0.01f;
     assets.renderCylinder(camera.getCameraPerspective(), vec3f(1.0f, 0.0f, 0.0f), vec3f(1.0f, 1.0f, 0.0f), borderRadius, vec3f(1.0f, 0.0f, 0.0f));
