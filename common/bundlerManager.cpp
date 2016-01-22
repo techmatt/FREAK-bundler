@@ -148,6 +148,8 @@ void BundlerManager::solve()
     options.minimizer_progress_to_stdout = true;
     options.max_num_iterations = 100000;
     options.max_num_consecutive_invalid_steps = 100;
+    options.num_threads = 7;
+    options.num_linear_solver_threads = 7;
     options.function_tolerance = constants::CERESTolerance;
     ceres::Solver::Summary summary;
     ceres::Solve(options, &problem, &summary);

@@ -13,7 +13,7 @@ namespace constants
 
     const int RANSACFullIters = 1000;
     
-    const float outlierDist = 0.05f;
+    const float outlierDist = 0.02f;
     const float outlierDistSq = outlierDist * outlierDist;
 
     const double CERESTolerance = 1e-7;

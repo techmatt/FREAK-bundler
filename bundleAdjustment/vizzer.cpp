@@ -14,9 +14,9 @@ void Vizzer::init(ApplicationData &app)
     state.bundler.loadSensorFile(constants::dataDir + "/sensors/sample.sensor");
     state.bundler.computeKeypoints();
     state.bundler.addCorrespondences(1);
-    //state.bundler.addCorrespondences(2);
-    //state.bundler.addCorrespondences(3);
-    //state.bundler.addCorrespondences(4);
+    state.bundler.addCorrespondences(2);
+    state.bundler.addCorrespondences(3);
+    state.bundler.addCorrespondences(4);
     
     state.bundler.solve();
     
