@@ -48,15 +48,6 @@ void BundlerManager::loadSensorFile(const string &filename)
     }
 }
 
-void BundlerManager::addCorrespondences(int forwardSkip)
-{
-    cout << "Adding correspondesnces (skip=" << forwardSkip << ")" << endl;
-    for (auto &startImage : frames)
-    {
-        addCorrespondences(startImage.index, startImage.index + forwardSkip);
-    }
-}
-
 void BundlerManager::computeKeypoints()
 {
     cout << "Computing image keypoints" << endl;
@@ -64,6 +55,15 @@ void BundlerManager::computeKeypoints()
     for (auto &i : frames)
     {
         i.keypoints = extractor.detectAndDescribe(i.colorImage);
+    }
+}
+
+void BundlerManager::addCorrespondences(int forwardSkip)
+{
+    cout << "Adding correspondesnces (skip=" << forwardSkip << ")" << endl;
+    for (auto &startImage : frames)
+    {
+        addCorrespondences(startImage.index, startImage.index + forwardSkip);
     }
 }
 
@@ -143,8 +143,8 @@ void BundlerManager::solve()
     cout << "Total correspondences: " << totalCorrespondences << endl;
     
     ceres::Solver::Options options;
-    //options.linear_solver_type = ceres::SPARSE_NORMAL_CHOLESKY;
-    options.linear_solver_type = ceres::SPARSE_SCHUR;
+    options.linear_solver_type = ceres::SPARSE_NORMAL_CHOLESKY;
+    //options.linear_solver_type = ceres::SPARSE_SCHUR;
     options.minimizer_progress_to_stdout = true;
     options.max_num_iterations = 100000;
     options.max_num_consecutive_invalid_steps = 100;
@@ -166,16 +166,6 @@ void BundlerManager::saveKeypointCloud(const string &outputFilename) const
     {
         const mat4f m = frame.frameToWorldMatrix();
         
-        /*for (const Keypoint &keypt : frame.keypoints)
-        {
-            const vec3f framePos = frame.localPos(keypt.pt);
-            if (!framePos.isValid())
-                continue;
-
-            cloud.m_points.push_back(m * framePos);
-            cloud.m_colors.push_back(vec4f(keypt.color) / 255.0f);
-        }*/
-
         const int stride = 5;
         for (auto &p : frame.depthImage)
         {

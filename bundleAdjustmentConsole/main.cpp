@@ -19,12 +19,20 @@ void App::go()
 
     bundler.solve();
 
-    bundler.thresholdCorrespondences(0.01);
+    bundler.saveKeypointCloud(constants::debugDir + "resultA.ply");
+    bundler.saveResidualDistribution(constants::debugDir + "residualsA.csv");
 
+    bundler.thresholdCorrespondences(0.01);
     bundler.solve();
 
-    bundler.saveKeypointCloud(constants::debugDir + "result.ply");
-    bundler.saveResidualDistribution(constants::debugDir + "residuals.csv");
+    bundler.saveKeypointCloud(constants::debugDir + "resultB.ply");
+    bundler.saveResidualDistribution(constants::debugDir + "residualsB.csv");
+
+    bundler.thresholdCorrespondences(0.005);
+    bundler.solve();
+
+    bundler.saveKeypointCloud(constants::debugDir + "resultC.ply");
+    bundler.saveResidualDistribution(constants::debugDir + "residualsC.csv");
 }
 
 int main(int argc, char** argv)
