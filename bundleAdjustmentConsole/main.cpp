@@ -20,7 +20,7 @@ void App::go()
     bundler.allCorrespondences[0].visualize(constants::debugDir + "0_1/");
 
     bundler.solve();
-
+    util::makeDirectory(constants::debugDir);
     bundler.saveKeypointCloud(constants::debugDir + "resultA.ply");
     bundler.saveResidualDistribution(constants::debugDir + "residualsA.csv");
 
