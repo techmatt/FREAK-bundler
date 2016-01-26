@@ -16,12 +16,12 @@ namespace constants
     const float outlierDist = 0.02f;
     const float outlierDistSq = outlierDist * outlierDist;
 
-    const double CERESTolerance = 1e-8;
+    const double CERESTolerance = 1e-6;
 
-    const string dataDir = R"(C:\Code\FREAK-bundler\data\)";
+    const string dataDir = R"(..\data\)";
     const string debugDir = dataDir + "debug/";
 
-    const int debugMaxFrameCount = 20;
-    //const int debugMaxFrameCount = numeric_limits<int>::max();
+    //const int debugMaxFrameCount = 20;
+    const int debugMaxFrameCount = numeric_limits<int>::max();
 
 }

@@ -18,7 +18,7 @@ void App::go()
     bundler.addCorrespondences(4);
 
     bundler.solve();
-
+    util::makeDirectory(constants::debugDir);
     bundler.saveKeypointCloud(constants::debugDir + "resultA.ply");
     bundler.saveResidualDistribution(constants::debugDir + "residualsA.csv");
 
