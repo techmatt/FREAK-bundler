@@ -87,6 +87,13 @@ struct ImagePairCorrespondences
 {
     struct TransformResult
     {
+        TransformResult()
+        {
+            totalError = numeric_limits<double>::max();
+            inlierError = numeric_limits<double>::max();
+            inlierCount = 0;
+            outlierCount = numeric_limits<int>::max();
+        }
         double totalError;
         double inlierError;
         int inlierCount;

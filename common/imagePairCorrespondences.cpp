@@ -96,8 +96,6 @@ void ImagePairCorrespondences::visualize(const string &dir) const
             continue;
 
         meshes.push_back(makeColoredBox(pos + AOffset, AColor, 0.002f));
-        //cloud.m_points.push_back(pos + AOffset);
-        //cloud.m_colors.push_back(AColor);
     }
 
     for (auto &p : imageB->depthImage)
@@ -110,34 +108,9 @@ void ImagePairCorrespondences::visualize(const string &dir) const
             continue;
 
         meshes.push_back(makeColoredBox(pos + BOffset, BColor, 0.002f));
-        //cloud.m_points.push_back(pos + BOffset);
-        //cloud.m_colors.push_back(BColor);
     }
 
-    std::vector<vec3f> unifiedVertices;
-    std::vector<unsigned int> unifiedIndices;
-    std::vector<vec4f> unifiedColors;
-    std::vector<vec2f> unifiedTexCoords;
-    std::vector<vec3f> unifiedNormals;
-
-    int meshBaseVertex = 0;
-    for (const auto &mesh : meshes)
-    {
-        for (auto &v : mesh.getVertices())
-        {
-            unifiedVertices.push_back(v.position);
-            unifiedColors.push_back(v.color);
-        }
-        for (auto &i : mesh.getIndices())
-        {
-            unifiedIndices.push_back(i.x + meshBaseVertex);
-            unifiedIndices.push_back(i.y + meshBaseVertex);
-            unifiedIndices.push_back(i.z + meshBaseVertex);
-        }
-        meshBaseVertex += (int)mesh.getVertices().size();
-    }
-
-    TriMeshf unifiedMesh(unifiedVertices, unifiedIndices, unifiedColors, unifiedNormals, unifiedTexCoords);
+    TriMeshf unifiedMesh = Shapesf::unifyMeshes(meshes);
 
     MeshIOf::saveToPLY(dir + "mesh.ply", unifiedMesh.getMeshData());
 }
@@ -212,8 +185,8 @@ void ImagePairCorrespondences::estimateTransform()
         cout << "Too few inliers to compute transform (" << transformInliers << "): " << imageA->index << "-" << imageB->index << endl;
         cout << bestTransform << endl;
         cout << "Best inliers: " << bestStats.inlierCount << endl;
-        visualize(constants::debugDir + to_string(imageA->index) + "_" + to_string(imageB->index) + "/");
-        cin.get();
+        //visualize(constants::debugDir + to_string(imageA->index) + "_" + to_string(imageB->index) + "/");
+        //cin.get();
     }
     else
         transformAToB = estimateTransform(inlierIndices);
@@ -250,14 +223,6 @@ mat4f ImagePairCorrespondences::estimateTransform(const set<int> &indices)
     return result;
 }
 
-/*
-struct TransformResult
-{
-double totalError;
-double inlierError;
-int inlierCount;
-int outlierCount;
-};*/
 ImagePairCorrespondences::TransformResult ImagePairCorrespondences::computeTransformResult(const mat4f &transform)
 {
     TransformResult result;

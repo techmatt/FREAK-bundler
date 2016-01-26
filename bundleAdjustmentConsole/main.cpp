@@ -17,6 +17,8 @@ void App::go()
     bundler.addCorrespondences(3);
     bundler.addCorrespondences(4);
 
+    bundler.allCorrespondences[0].visualize(constants::debugDir + "0_1/");
+
     bundler.solve();
 
     bundler.saveKeypointCloud(constants::debugDir + "resultA.ply");
