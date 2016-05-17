@@ -22,9 +22,14 @@ void Vizzer::init(ApplicationData &app)
     state.bundler.addCorrespondences(20);
     state.bundler.addCorrespondences(30);
     state.bundler.addCorrespondences(40);
-    state.bundler.addCorrespondences(60);
-    state.bundler.addCorrespondences(80);
+    state.bundler.addCorrespondences(70);
     state.bundler.addCorrespondences(100);
+    state.bundler.addCorrespondences(150);
+    state.bundler.addCorrespondences(200);
+    state.bundler.addCorrespondences(250);
+    state.bundler.addCorrespondences(300);
+    state.bundler.addCorrespondences(350);
+    state.bundler.addCorrespondences(400);
     
     state.bundler.solve();
     
@@ -32,9 +37,9 @@ void Vizzer::init(ApplicationData &app)
 
     state.bundler.solve();
 
-    //state.bundler.thresholdCorrespondences(0.005);
+    state.bundler.thresholdCorrespondences(0.005);
 
-    //state.bundler.solve();
+    state.bundler.solve();
 
     state.bundler.saveKeypointCloud(constants::debugDir + "result.ply");
     state.bundler.saveResidualDistribution(constants::debugDir + "residuals.csv");

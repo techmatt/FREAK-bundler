@@ -16,7 +16,7 @@ namespace constants
     const float outlierDist = 0.02f;
     const float outlierDistSq = outlierDist * outlierDist;
 
-    const double CERESTolerance = 1e-6;
+    const double CERESTolerance = 1e-8;
 
     const string dataDir = R"(..\data\)";
     const string debugDir = dataDir + "debug/";
